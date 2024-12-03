@@ -27,8 +27,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/memos")
 public class MemoController {
-    private final Map<Long, Memo> memoList = new HashMap<>();
-
     @PostMapping
     public ResponseEntity<MemoResponseDto> createMemo(@RequestBody MemoRequestDto dto) {
 
