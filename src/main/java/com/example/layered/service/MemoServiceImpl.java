@@ -4,6 +4,7 @@ package com.example.layered.service;
 // 3. 메모 단건 조회 API 리팩토링 완료
 // 4. 메모 전체 수정 API 리팩토링 완료
 // 5. 메모 제목 수정 APT 리팩토링 완료
+// 6. 메모 삭제 API 리팩토링 완료
 
 import com.example.layered.dto.MemoRequestDto;
 import com.example.layered.dto.MemoResponseDto;
@@ -103,7 +104,7 @@ public class MemoServiceImpl implements MemoService {
         Memo memoById = memoRepository.findMemoById(id);
 
         if (memoById == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id =" + id);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
         }
 
         if (title == null || contents != null) {
@@ -114,5 +115,17 @@ public class MemoServiceImpl implements MemoService {
 
         return new MemoResponseDto(memoById);
         // [주의] return memoById가 아니다.
+    }
+
+    @Override
+    public void deleteMemo(Long id) {
+        Memo memoById = memoRepository.findMemoById(id);
+
+        if(memoById == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " +id);
+        }
+
+        memoRepository.deleteMemo(id);
+
     }
 }

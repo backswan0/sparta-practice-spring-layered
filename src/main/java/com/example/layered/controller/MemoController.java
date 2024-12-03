@@ -4,6 +4,7 @@ package com.example.layered.controller;
 // 3. 메모 단건 조회 API 리팩토링 완료
 // 4. 메모 전체 수정 API 리팩토링 완료
 // 5. 메모 제목 수정 API 리팩토링 완료
+// 6. 메모 삭제 API 리팩토링 완료
 
 import com.example.layered.dto.MemoRequestDto;
 import com.example.layered.dto.MemoResponseDto;
@@ -88,5 +89,12 @@ public class MemoController {
     ) {
         MemoResponseDto responseDto = memoService.updateTitle(id, dto.getTitle(), dto.getContents());
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteMemo (@PathVariable Long id) {
+        memoService.deleteMemo(id);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
