@@ -2,6 +2,7 @@ package com.example.layered.service;
 // 1. 메모 생성 API 리팩토링 완료
 // 2. 메모 목록 조회 API 리팩토링 완료
 // 3. 메모 단건 조회 API 리팩토링 완료
+// 4. 메모 전체 수정 API 리팩토링 완료
 
 import com.example.layered.dto.MemoRequestDto;
 import com.example.layered.dto.MemoResponseDto;
@@ -70,5 +71,28 @@ public class MemoServiceImpl implements MemoService {
         }
 
         return new MemoResponseDto(memoById);
+    }
+
+    @Override
+    public MemoResponseDto updateMemo(Long id, String title, String contents) {
+
+        Memo memoById = memoRepository.findMemoById(id);
+
+        if (memoById == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id =" + id);
+        }
+
+        if (title == null || contents == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
+        }
+
+        memoById.update(title, contents);
+
+        /*
+        이미 데이터베이스에 저장된 memo 객체를 업데이트를 했다.
+        따라서 업데이트 때문에 repository에 접근하지 않아도 된다.
+         */
+
+        return new MemoResponseDto((memoById));
     }
 }
