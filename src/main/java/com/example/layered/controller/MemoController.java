@@ -1,19 +1,15 @@
 package com.example.layered.controller;
 // 1. 메모 생성 API 리팩토링 완료
+// 2. 메모 목록 조회 API 리팩토링 완료
 
 import com.example.layered.dto.MemoRequestDto;
 import com.example.layered.dto.MemoResponseDto;
 import com.example.layered.service.MemoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /*
 [Controller]
@@ -42,9 +38,32 @@ public class MemoController {
     @PostMapping
     public ResponseEntity<MemoResponseDto> createMemo(@RequestBody MemoRequestDto dto) {
 
+        MemoResponseDto responseDto = memoService.saveMemo(dto);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
         /*
         [Service Layer 호출과 응답 추가하기]
-         */
+        [수정 전]
         return new ResponseEntity<>(memoService.saveMemo(dto), HttpStatus.CREATED);
+         */
+    }
+
+    @GetMapping
+    public ResponseEntity<List<MemoResponseDto>> findAllMemos() {
+
+        List<MemoResponseDto> allMemos = memoService.findAllMemos();
+
+        return new ResponseEntity<>(allMemos, HttpStatus.OK);
+        /*
+        비즈니스 로직(==핵심 로직)이므로 findAllMemos 호출이 중요하다.
+        비즈니스 로직은 눈에 잘 띄게, 아닌 건 잘 안 보이게 위와 같이 수정
+        [수정 전]
+        return new ResponseEntity<>(memoService.findAllMemos(), HttpStatus.OK);
+        ➡️이 로직을 보려면 눈이 오른쪽까지 쭉 읽어야 하므로 가독성이 떨어진다.
+        [코드스니펫]
+        public List<MemoResponseDto> findAllMemos() {
+            return memoService.findAllMemos();
+        }
+         */
     }
 }

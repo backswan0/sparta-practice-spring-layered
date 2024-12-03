@@ -1,11 +1,14 @@
 package com.example.layered.service;
 // 1. 메모 생성 API 리팩토링 완료
+// 2. 메모 목록 조회 API 리팩토링 완료
 
 import com.example.layered.dto.MemoRequestDto;
 import com.example.layered.dto.MemoResponseDto;
 import com.example.layered.entity.Memo;
 import com.example.layered.repository.MemoRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /*
 MemoServiceImpl의 Impl은 implements를 의미한다.
@@ -41,5 +44,15 @@ public class MemoServiceImpl implements MemoService {
 
         return new MemoResponseDto(savedMemo);
         // [주의] return savedMemo; 아니다.
+    }
+
+    @Override
+    public List<MemoResponseDto> findAllMemos() {
+        List<MemoResponseDto> allMemos = memoRepository.findAllMemos();
+        return allMemos;
+        /*
+        == return memoRepository.findAllMemos();
+        == 변수에 받은 다음 반환하냐, 바로 반환하냐 차이일 뿐이다.
+         */
     }
 }

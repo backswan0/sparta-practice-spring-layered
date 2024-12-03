@@ -1,12 +1,12 @@
 package com.example.layered.repository;
 // 1. 메모 생성 API 리팩토링 완료
+// 2. 메모 목록 조회 API 리팩토링 완료
 
+import com.example.layered.dto.MemoResponseDto;
 import com.example.layered.entity.Memo;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class MemoRepositoryImpl implements MemoRepository {
@@ -25,5 +25,20 @@ public class MemoRepositoryImpl implements MemoRepository {
 
         // [4] 저장한 memo 객체 반환하기
         return memo;
+    }
+
+    @Override
+    public List<MemoResponseDto> findAllMemos() {
+        // [1] 리스트 초기화
+        List<MemoResponseDto> allMemos = new ArrayList<>();
+
+        // [2] DB에 저장된 메모를 하나씩 꺼내서 반복문 실행해서 저장하기
+        for (Memo memo: memoList.values()) {
+            MemoResponseDto responseDto = new MemoResponseDto(memo);
+            allMemos.add(responseDto);
+        }
+
+        // [3] 반환하기
+        return allMemos;
     }
 }
