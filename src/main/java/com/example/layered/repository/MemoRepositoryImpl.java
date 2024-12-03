@@ -1,6 +1,7 @@
 package com.example.layered.repository;
 // 1. 메모 생성 API 리팩토링 완료
 // 2. 메모 목록 조회 API 리팩토링 완료
+// 3. 메모 단건 조회 API 리팩토링 완료
 
 import com.example.layered.dto.MemoResponseDto;
 import com.example.layered.entity.Memo;
@@ -40,5 +41,10 @@ public class MemoRepositoryImpl implements MemoRepository {
 
         // [3] 반환하기
         return allMemos;
+    }
+
+    @Override
+    public Memo findMemoById(Long id) {
+        return memoList.get(id);
     }
 }

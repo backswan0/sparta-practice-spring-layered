@@ -1,12 +1,15 @@
 package com.example.layered.service;
 // 1. 메모 생성 API 리팩토링 완료
 // 2. 메모 목록 조회 API 리팩토링 완료
+// 3. 메모 단건 조회 API 리팩토링 완료
 
 import com.example.layered.dto.MemoRequestDto;
 import com.example.layered.dto.MemoResponseDto;
 import com.example.layered.entity.Memo;
 import com.example.layered.repository.MemoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -54,5 +57,18 @@ public class MemoServiceImpl implements MemoService {
         == return memoRepository.findAllMemos();
         == 변수에 받은 다음 반환하냐, 바로 반환하냐 차이일 뿐이다.
          */
+    }
+
+    @Override
+    public MemoResponseDto findMemoById(Long id) {
+
+        Memo memoById = memoRepository.findMemoById(id);
+
+        if (memoById == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id =" + id);
+            // 뒤에 적은 메시지는 추후 배울 예정
+        }
+
+        return new MemoResponseDto(memoById);
     }
 }
