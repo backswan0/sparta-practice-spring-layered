@@ -3,6 +3,7 @@ package com.example.layered.repository;
 // 2. 메모 목록 조회 API 리팩토링 완료
 // 3. 메모 단건 조회 API 리팩토링 완료
 // 4. 메모 전체 수정 API 리팩토링 완료
+// 5. 메모 제목 수정 API 리팩토링 완료
 
 import com.example.layered.dto.MemoResponseDto;
 import com.example.layered.entity.Memo;

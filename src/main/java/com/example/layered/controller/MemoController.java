@@ -3,6 +3,7 @@ package com.example.layered.controller;
 // 2. 메모 목록 조회 API 리팩토링 완료
 // 3. 메모 단건 조회 API 리팩토링 완료
 // 4. 메모 전체 수정 API 리팩토링 완료
+// 5. 메모 제목 수정 API 리팩토링 완료
 
 import com.example.layered.dto.MemoRequestDto;
 import com.example.layered.dto.MemoResponseDto;
@@ -79,6 +80,13 @@ public class MemoController {
             @PathVariable Long id, @RequestBody MemoRequestDto dto
     ) {
         MemoResponseDto responseDto = memoService.updateMemo(id, dto.getTitle(), dto.getContents());
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<MemoResponseDto> updateTitle (@PathVariable Long id, @RequestBody MemoRequestDto dto
+    ) {
+        MemoResponseDto responseDto = memoService.updateTitle(id, dto.getTitle(), dto.getContents());
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 }
