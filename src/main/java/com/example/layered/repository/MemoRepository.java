@@ -1,23 +1,37 @@
 package com.example.layered.repository;
-// 1. 메모 생성 API 리팩토링 완료
-// 2. 메모 목록 조회 API 리팩토링 완료
-// 3. 메모 단건 조회 API 리팩토링 완료
-// 4. 메모 전체 수정 API 리팩토링 완료
-// 5. 메모 제목 수정 API 리팩토링 완료
-// 6. 메모 삭제 API 리팩토링 완료
 
 import com.example.layered.dto.MemoResponseDto;
 import com.example.layered.entity.Memo;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MemoRepository {
-    Memo saveMemo(Memo memo);
-    // memo 객체는 id가 없는 상태로 전달된다.
+    MemoResponseDto saveMemo(Memo memo);
+    /*
+    [수정 전] Memo saveMemo(Memo memo);
+    [수정 후] MemoResponseDto saveMemo(Memo memo);
+     */
 
     List<MemoResponseDto> findAllMemos();
 
-    Memo findMemoById (Long id);
+    Optional<Memo> findMemoById (Long id);
+    /*
+    [수정 전] Memo findMemoById (Long id);
+    [수정 후] Optional<Memo> findMemoById (Long id);
+             그다음 JdbcTemplateMemoRepository로 가자.
+     */
 
-    void deleteMemo (Long id);
+    Memo findMemoByIdOrElseThrow (Long id);
+
+    int updateMemo (Long id, String title, String contents);
+
+    int updateTitle (Long id, String title);
+
+    int deleteMemo (Long id);
+    /*
+    [수정 전] void
+    [수정 후] int
+     */
+
 }

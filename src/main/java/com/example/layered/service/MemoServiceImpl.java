@@ -1,10 +1,4 @@
 package com.example.layered.service;
-// 1. 메모 생성 API 리팩토링 완료
-// 2. 메모 목록 조회 API 리팩토링 완료
-// 3. 메모 단건 조회 API 리팩토링 완료
-// 4. 메모 전체 수정 API 리팩토링 완료
-// 5. 메모 제목 수정 APT 리팩토링 완료
-// 6. 메모 삭제 API 리팩토링 완료
 
 import com.example.layered.dto.MemoRequestDto;
 import com.example.layered.dto.MemoResponseDto;
@@ -12,14 +6,12 @@ import com.example.layered.entity.Memo;
 import com.example.layered.repository.MemoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
-/*
-MemoServiceImpl의 Impl은 implements를 의미한다.
-즉, MemoService 인터페이스를 구현한 구현체임을 뜻한다.
- */
 @Service
 public class MemoServiceImpl implements MemoService {
 
@@ -31,101 +23,121 @@ public class MemoServiceImpl implements MemoService {
 
     @Override
     public MemoResponseDto saveMemo(MemoRequestDto memoRequestDto) {
-
         Memo memo = new Memo(memoRequestDto.getTitle(), memoRequestDto.getContents());
-        /*
-        [1] 요청받은 데이터로 Memo 객체 생성하기
-            단, id 식별자 제외
-            == MemoId 식별자 계산은 repository 영역이므로
-            Q. memoRequestDto.getTitle()가 오류로 뜨는 이유
-            A. 요구하는 타입은 Long인데 String 타입을 제공해서
-            mac 기준: option + command + v ➡️ 자동으로 변수 생성
-         */
-
-        Memo savedMemo = memoRepository.saveMemo(memo);
-        /*
-        [2] [1]에서 생성된 객체를 DB에 저장하기
-            이때 저장된 메모라는 의미로 이름은 'savedMemo'
-         */
-
-        return new MemoResponseDto(savedMemo);
-        // [주의] return savedMemo; 아니다.
+        return memoRepository.saveMemo(memo);
     }
 
     @Override
     public List<MemoResponseDto> findAllMemos() {
         List<MemoResponseDto> allMemos = memoRepository.findAllMemos();
         return allMemos;
-        /*
-        == return memoRepository.findAllMemos();
-        == 변수에 받은 다음 반환하냐, 바로 반환하냐 차이일 뿐이다.
-         */
     }
 
     @Override
     public MemoResponseDto findMemoById(Long id) {
-
+        Memo memo = memoRepository.findMemoByIdOrElseThrow(id);
+        /*
+        Optional을 사용했기 때문에 위에서도 바꿔줘야 한다.
+        [수정 전]
         Memo memoById = memoRepository.findMemoById(id);
+        [수정 후]
+        Optional<Memo> optionalMemo = memoRepository.findMemoById(id);
+        [수정 후 2]
+        Memo memo = memoRepository.findMemoByIdOrElseThrow(id);
+         */
 
-        if (memoById == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id =" + id);
-            // 뒤에 적은 메시지는 추후 배울 예정
+        /*
+        [Optional]
+        null을 직접 다루는 건 안전하지 않기 때문에 사용할 거다.
+        null 값이 올 수 있는 값을 감싸는 래퍼 클래스(Wrapper 클래스)이다.
+        NPE(NullPointerException)를 방지한다.
+
+        [수정 전]
+        if(memoById == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " +id);
         }
+        [수정 후]
+        if (optionalMemo.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
+        }
+        [수정 후 2]
+        수정한 거 삭제
+         */
 
+        return new MemoResponseDto(memo);
+        /*
+        [수정 전]
         return new MemoResponseDto(memoById);
+        [수정 후]
+        return new MemoResponseDto(optionalMemo.get());
+        [수정 후 2]
+        return new MemoResponseDto(memo);
+         */
     }
 
+    // update는 성공했으나 조회를 못할 때를 대비하여 Transactional annotation을 사용한다.
+    @Transactional
     @Override
     public MemoResponseDto updateMemo(Long id, String title, String contents) {
-
-        Memo memoById = memoRepository.findMemoById(id);
-
-        if (memoById == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id =" + id);
-        }
 
         if (title == null || contents == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
         }
 
-        memoById.update(title, contents);
+        int updatedRow = memoRepository.updateMemo(id, title, contents);
 
-        /*
-        이미 데이터베이스에 저장된 memo 객체를 업데이트를 했다.
-        따라서 업데이트 때문에 repository에 접근하지 않아도 된다.
-         */
-
-        return new MemoResponseDto((memoById));
-    }
-
-    @Override
-    public MemoResponseDto updateTitle(Long id, String title, String contents) {
-        // 수정할 memo 객체 찾아오기
-        Memo memoById = memoRepository.findMemoById(id);
-
-        if (memoById == null) {
+        if (updatedRow == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
         }
+
+        Memo memo = memoRepository.findMemoByIdOrElseThrow(id);
+        /*
+        - update가 잘 되었는지 조회해야 하므로
+        [수정 전]
+        Optional<Memo> optionalMemo = memoRepository.findMemoById(id);
+         */
+
+        return new MemoResponseDto(memo);
+        /*
+        [수정 전]
+        return new MemoResponseDto((memoById));
+        [수정 후]
+        return new MemoResponseDto(optionalMemo.get());
+        [수정 후 2]
+        return new MemoResponseDto(memo);
+         */
+    }
+
+    @Transactional
+    @Override
+    public MemoResponseDto updateTitle(Long id, String title, String contents) {
+        // stream 쓰지 않은 버전....ㅎㅎㅎㅎㅎㅎ
+        Optional<Memo> optionalMemo = memoRepository.findMemoById(id);
 
         if (title == null || contents != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
         }
 
-        memoById.updateTitle(title);
+        int updatedRow = memoRepository.updateTitle(id, title);
+        // [수정 전] memoById.updateTitle(title);
 
-        return new MemoResponseDto(memoById);
-        // [주의] return memoById가 아니다.
+        if (updatedRow == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
+        }
+
+        Optional<Memo> optionalMemo1 = memoRepository.findMemoById(id);
+
+        return new MemoResponseDto(optionalMemo1.get());
+        // [수정 전] return new MemoResponseDto(memoById);
     }
 
     @Override
     public void deleteMemo(Long id) {
-        Memo memoById = memoRepository.findMemoById(id);
 
-        if(memoById == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " +id);
+        int deletedRow = memoRepository.deleteMemo(id);
+
+        if (deletedRow == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
         }
-
-        memoRepository.deleteMemo(id);
-
     }
 }
